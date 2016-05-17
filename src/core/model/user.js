@@ -142,7 +142,6 @@ function defineUser(core, sequelize) {
                         'field': 'password',
                         'errorMessage': 'A Password has to be provided.'
                     });
-                    return;
                 }
 
                 // check the password size

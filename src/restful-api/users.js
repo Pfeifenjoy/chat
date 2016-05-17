@@ -127,7 +127,7 @@ let initUsers = (authenticationMiddleware) => {
 			});
 			return;
 		}
-		console.log(id);
+
 		req.app.core.db.User.findById(id).then(user => {
 				res.json(user.getUserRepresentation());
 			})

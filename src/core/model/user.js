@@ -109,7 +109,6 @@ function defineUser(core, sequelize) {
                         'field': 'password',
                         'errorMessage': 'A Password has to be provided.'
                     });
-                    return;
                 }
                 if (password.length < core.config.user.passwordMinLength) {
                     errors.push({

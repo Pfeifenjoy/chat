@@ -24,6 +24,10 @@ function defineUser(core, sequelize) {
     }, {
         'instanceMethods': {
 
+            /**
+             * Checks whether the password matches to the users password.
+             * Returns true, if the passwords are the same. False otherwises.
+             */
             'checkPassword': function(password) {
                 let hash = crypto
                     .createHash('md5')
@@ -32,6 +36,9 @@ function defineUser(core, sequelize) {
                 return this.passwordHash === hash;
             },
 
+            /**
+             * Sets the password to the given string.
+             */
             'setPassword': function(password) {
                 let salt = crypto
                     .randomBytes(32)
@@ -44,9 +51,11 @@ function defineUser(core, sequelize) {
                 this.passwordHash = hash;
             },
 
-            'getUserRepresentation': function(){
-
-                // generate the gravatar icon
+            /**
+             * Returns a URL to the profile image of the user 
+             * on gravatar.
+             */
+            'getGravatarUrl': function() {
                 const baseUrl = '//www.gravatar.com/avatar/';
                 let gravatarEmail = this.email
                     .toLowerCase()
@@ -56,11 +65,17 @@ function defineUser(core, sequelize) {
                     .update(gravatarEmail)
                     .digest('hex');
                 let gravatarUrl = baseUrl + gravatarHash;
+            },
 
-                // return
+            /**
+             * Returns a representation of the user that
+             * can be sent to clients over the RESTful API.
+             * (It is cleaned to not contain any internal data.)
+             */
+            'getUserRepresentation': function(){
                 return {
                     'username': this.username,
-                    'icon': gravatarUrl
+                    'icon': this.getGravatarUrl
                 };
             }
         }

@@ -75,7 +75,7 @@ function defineUser(core, sequelize) {
             'getUserRepresentation': function() {
                 return {
                     'username': this.username,
-                    'icon': this.getGravatarUrl
+                    'icon': this.getGravatarUrl()
                 };
             },
 

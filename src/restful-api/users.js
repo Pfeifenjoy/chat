@@ -18,7 +18,7 @@ router.post('/', (req, res) => {
 		});
 		return;
 	}
-	if (email === undefined) email = "";
+	if (email === '') email = undefined;
 
 	//Create the user
 	let user = req.app.core.db.User.build({
@@ -26,10 +26,10 @@ router.post('/', (req, res) => {
 		'email': email
 	});
 
-	let validateUsernameResult = user.validateUsername();
+	let validateResult = user.validate();
 	let validatePasswordResult = user.validatePassword(password);
 
-	let validateResult = validateUsernameResult.concat(validatePasswordResult);
+	validateResult = validateResult.concat(validatePasswordResult);
 
 	if (validateResult.length > 0) {
 		res.status(400).json({

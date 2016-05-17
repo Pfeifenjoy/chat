@@ -1,5 +1,7 @@
-const Sequelize = require('sequelize');
-const usermodel	= require('./model/user.js'); 
+const Sequelize 	= require('sequelize');
+const usermodel		= require('./model/user.js'); 
+const roommodel		= require('./model/room.js'); 
+const messagemodel	= require('./model/message.js'); 
 
 /**
  * Connects to the database.
@@ -27,10 +29,13 @@ function connect(core) {
 	// define the models 
 	
 	let User = usermodel.defineUser(sequelize);
+	let Room = roommodel.defineRoom(sequelize, User);
+	let Message = messagemodel.defineMessage(sequelize, User, Room);
 
 	return {
 		'sequelize': sequelize,
-		'User': User
+		'User': User,
+		'Room': Room
 	};
 }
 

@@ -12,10 +12,10 @@ function defineUser(sequelize) {
             'type': Sequelize.STRING,
             'allowNull': true
         },
-        'password_salt': {
+        'passwordSalt': {
             'type': Sequelize.STRING
         },
-        'password_hash': {
+        'passwordHash': {
             'type': Sequelize.STRING
         }
     }, {
@@ -24,9 +24,21 @@ function defineUser(sequelize) {
             'checkPassword': function(password) {
                 let hash = crypto
                     .createHash('md5')
-                    .update(password + this.password_salt)
+                    .update(password + this.passwordSalt)
                     .digest('hex');
-                return this.password_hash === hash;
+                return this.passwordHash === hash;
+            },
+
+            'setPassword': function(password) {
+                let salt = crypto
+                    .randomBytes(32)
+                    .toString('hex');
+                let hash = crypto
+                    .createHash('md5')
+                    .update(password + salt)
+                    .digest('hex');
+                this.passwordSalt = salt;
+                this.passwordHash = hash;
             },
 
             'getUserRepresentation': function(){

@@ -1,0 +1,17 @@
+{
+    "name": "chat",
+    "version": "1.0.0",
+    "description": "A tiny chat application.",
+    "author": "Arwed Mett, Philipp Pütz, Tobias Dorra",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node ./src/index.js"
+    },
+    "keywords": [],
+    "devDependencies": {},
+    "dependencies": {
+        "express": "^4.13.4",
+        "sequelize": "^3.23.2",
+        "sqlite3": "^3.1.4"
+    }
+}

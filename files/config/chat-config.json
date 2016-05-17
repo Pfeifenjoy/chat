@@ -1,0 +1,11 @@
+{
+	"database": {
+		"db": "",
+		"user": "",
+		"password": "",
+		"options": {
+			"dialect": "sqlite",
+			"storage": "db.sqlite"
+		}
+	}
+}

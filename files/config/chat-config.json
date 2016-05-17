@@ -7,5 +7,11 @@
 			"dialect": "sqlite",
 			"storage": "db.sqlite"
 		}
+	},
+	"user": {
+		"username-min-length": 3,
+		"username-max-length": 16,
+		"password-min-length": 8,
+		"password-max-length": 21
 	}
 }

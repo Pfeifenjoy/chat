@@ -13,5 +13,12 @@
 		"usernameMaxLength": 16,
 		"passwordMinLength": 8,
 		"passwordMaxLength": 21
+	},
+	"http": {
+		"port": 4000,
+		"api": {
+			"enabled": true,
+			"baseUrl": "/api/v1"
+		}
 	}
 }

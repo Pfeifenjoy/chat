@@ -20,5 +20,9 @@
 			"enabled": true,
 			"baseUrl": "/api/v1"
 		}
+	},
+	"session":{
+		"secret": "ARW455tgjko554458ahuikkjggs896asd546ASDcfr45aAdFKIasf5465AWD56a4sdASD5645QWasonghneASd854TZUa546",
+		"expire": "6h"
 	}
 }

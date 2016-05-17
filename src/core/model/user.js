@@ -29,6 +29,7 @@ function defineUser(core, sequelize) {
              * Returns true, if the passwords are the same. False otherwises.
              */
             'checkPassword': function(password) {
+                if (password === undefined) return false;
                 let hash = crypto
                     .createHash('md5')
                     .update(password + this.passwordSalt)

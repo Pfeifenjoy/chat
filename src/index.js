@@ -29,7 +29,8 @@ core.init()
 		// Start the server
 		app.core = core;
 		if (apiEnabled) {
-			app.use(apiBaseUrl, routes.initialRoutes(core));
+			// add all routes
+			app.use(apiBaseUrl, routes.initialRoutes(app));
 		}
 
 		// Handle routes which don't exist

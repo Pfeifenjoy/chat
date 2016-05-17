@@ -80,8 +80,19 @@ function defineUser(core, sequelize) {
                 };
             },
 
-            'validateUsername': function() {
+            /**
+             * Validates the user and returns an array of error object.
+             * Every error is built like this: 
+             * {
+             *      'field': 'the field where the error occured at'
+             *      'errorMessage': 'a description of the error'
+             * }
+             * If the user is valid, an empty array ([]) will be returned.
+             */
+            'validate': function() {
                 let errors = [];
+
+                // the username must not be to short or to long. 
                 if (this.username.length < core.config.user.usernameMinLength) {
                     errors.push({
                         'field': 'username',
@@ -91,26 +102,50 @@ function defineUser(core, sequelize) {
                 if (this.username.length > core.config.user.usernameMaxLength) {
                     errors.push({
                         'field': 'username',
-                        'errorMessage': 'Username could not have more then ' + core.config.user.usernameMaxLength + ' chars.'
+                        'errorMessage': 'Username must not have more then ' + core.config.user.usernameMaxLength + ' chars.'
                     });
                 }
+
+                // the username must consist out of alphanumeric characters
                 if (/[^a-zA-Z0-9]/.test(this.username)) {
                     errors.push({
                         'field': 'username',
                         'errorMessage': 'Username must be alphanumeric.'
                     });
                 }
+
+                // if a email was given (this is optional!), it needs to be a valid one.
+                if (this.email){
+                    // Source of this RegExp: http://stackoverflow.com/a/1373724
+                    const emailRegExp = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+                    if (!emailRegExp.test(this.email)) {
+                        errors.push({
+                            'field': 'email',
+                            'errorMessage': 'Email must be a valid email address.'
+                        });
+                    }
+                }
                 return errors;
             },
 
+            /**
+             * Checks whether the given password fullfills
+             * all password guidlines.
+             * 
+             * The return format is the same like that of the validate() function.
+             */
             'validatePassword': function(password) {
                 let errors = [];
-                if (password === undefined) {
+
+                // do not permit empty passwords
+                if (password === undefined || password === '') {
                     errors.push({
                         'field': 'password',
                         'errorMessage': 'A Password has to be provided.'
                     });
                 }
+
+                // check the password size
                 if (password.length < core.config.user.passwordMinLength) {
                     errors.push({
                         'field': 'password',

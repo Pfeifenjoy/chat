@@ -75,8 +75,10 @@ function defineUser(core, sequelize) {
              */
             'getUserRepresentation': function() {
                 return {
+                    'id': this.id,
                     'username': this.username,
-                    'icon': this.getGravatarUrl()
+                    'icon': this.getGravatarUrl(),
+                    'email': this.email
                 };
             },
 

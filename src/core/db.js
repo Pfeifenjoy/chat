@@ -28,9 +28,9 @@ function connect(core) {
 
 	// define the models 
 	
-	let User = usermodel.defineUser(sequelize);
-	let Room = roommodel.defineRoom(sequelize, User);
-	let Message = messagemodel.defineMessage(sequelize, User, Room);
+	let User 	= usermodel.defineUser(core, sequelize);
+	let Room 	= roommodel.defineRoom(core, sequelize, User);
+	let Message	= messagemodel.defineMessage(core, sequelize, User, Room);
 
 	return {
 		'sequelize': sequelize,

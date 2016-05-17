@@ -1,12 +1,13 @@
 const Sequelize = require('sequelize');
 
-function defineRoom(sequelize, User) {
+function defineRoom(core, sequelize, User) {
 
     // The fields
     let Room = sequelize.define('room', {
         'id': {
             'type': Sequelize.UUID,
-            'primaryKey': true
+            'primaryKey': true,
+            'allowNull': false
         }
     });
 

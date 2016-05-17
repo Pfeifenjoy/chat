@@ -29,18 +29,6 @@ function defineUser(sequelize) {
                 return this.passwordHash === hash;
             },
 
-            'setPassword': function(password) {
-                let salt = crypto
-                    .randomBytes(32)
-                    .toString('hex');
-                let hash = crypto
-                    .createHash('md5')
-                    .update(password + salt)
-                    .digest('hex');
-                this.passwordSalt = salt;
-                this.passwordHash = hash;
-            },
-
             'getUserRepresentation': function(){
 
                 // generate the gravatar icon

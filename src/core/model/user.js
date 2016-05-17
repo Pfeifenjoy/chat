@@ -1,22 +1,25 @@
 const Sequelize = require('sequelize');
 const crypto    = require('crypto'); 
 
-function defineUser(sequelize) {
+function defineUser(core, sequelize) {
 
     let User = sequelize.define('user', {
         'username': {
             'type': Sequelize.STRING,
-            'unique': true
+            'unique': true,
+            'allowNull': false
         },
         'email': {
             'type': Sequelize.STRING,
             'allowNull': true
         },
         'passwordSalt': {
-            'type': Sequelize.STRING
+            'type': Sequelize.STRING,
+            'allowNull': false
         },
         'passwordHash': {
-            'type': Sequelize.STRING
+            'type': Sequelize.STRING,
+            'allowNull': false
         }
     }, {
         'instanceMethods': {

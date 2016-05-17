@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 
-function defineMessage(sequelize, User, Room) {
+function defineMessage(core, sequelize, User, Room) {
 
 	// The fields
     let Message = sequelize.define('message', {

@@ -63,7 +63,12 @@ router.post('/', (req, res) => {
 	if (email === undefined) email = "";
 
 	//Create the user
-	req.app.core.createUser(username, password, email)
+	let user = req.app.core.db.User.build({
+		'username': username,
+		'email': email
+	});
+	user.setPassword(password);
+	user.save()
 		.then(user => {
 			res.json(user.getUserRepresentation());
 		})

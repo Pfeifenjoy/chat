@@ -5,7 +5,8 @@ function defineMessage(sequelize, User, Room) {
 	// The fields
     let Message = sequelize.define('message', {
     	'content': {
-    		'type': Sequelize.STRING()
+    		'type': Sequelize.STRING(),
+            'allowNull': false
     	}
     });
 

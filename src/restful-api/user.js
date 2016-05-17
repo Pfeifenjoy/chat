@@ -1,6 +1,6 @@
-const router = requrire('express');
+const express = require('express');
 
-let router = new Router;
+let router = new express.Router;
 
 //Route to create a new user
 router.post('/', (req, res) => {
@@ -74,3 +74,5 @@ router.post('/', (req, res) => {
 			});
 		});
 });
+
+module.exports = router;

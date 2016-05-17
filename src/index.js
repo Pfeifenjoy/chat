@@ -26,8 +26,6 @@ const core = new Core(config);
 
 core.init()
 	.then(() => {
-		console.log('ok');
-
 		// Start the server
 		app.core = core;
 		if (apiEnabled) {

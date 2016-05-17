@@ -4,11 +4,7 @@ function defineRoom(core, sequelize, User) {
 
     // The fields
     let Room = sequelize.define('room', {
-        'id': {
-            'type': Sequelize.UUID,
-            'primaryKey': true,
-            'allowNull': false
-        }
+        /* A room has no fields, just relations to other tables  */
     });
 
     // The relations

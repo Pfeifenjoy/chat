@@ -107,3 +107,7 @@ fabric.properties
 
 
 build/
+
+
+# sqlite
+*.sqlite

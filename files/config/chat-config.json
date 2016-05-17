@@ -9,9 +9,9 @@
 		}
 	},
 	"user": {
-		"username-min-length": 3,
-		"username-max-length": 16,
-		"password-min-length": 8,
-		"password-max-length": 21
+		"usernameMinLength": 3,
+		"usernameMaxLength": 16,
+		"passwordMinLength": 8,
+		"passwordMaxLength": 21
 	}
 }

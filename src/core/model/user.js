@@ -66,19 +66,19 @@ function defineUser(core, sequelize) {
 
             'validateUsername': function() {
                 let errors = [];
-                if (username.length < core.config.user.usernameMinLength) {
+                if (this.username.length < core.config.user.usernameMinLength) {
                     errors.push({
                         'field': 'username',
                         'errorMessage': 'Username must have at minimum ' + core.config.user.userusernameMinLength + ' chars.'
                     });
                 }
-                if (username.length > core.config.user.usernameMaxLength) {
+                if (this.username.length > core.config.user.usernameMaxLength) {
                     errors.push({
                         'field': 'username',
                         'errorMessage': 'Username could not have more then ' + core.config.user.usernameMaxLength + ' chars.'
                     });
                 }
-                if (/[^a-zA-Z0-9]/.test(username)) {
+                if (/[^a-zA-Z0-9]/.test(this.username)) {
                     errors.push({
                         'field': 'username',
                         'errorMessage': 'Username must be alphanumeric.'

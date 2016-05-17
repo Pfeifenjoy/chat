@@ -27,19 +27,13 @@ router.post('/', (req, res) => {
 	});
 
 	let validateUsernameResult = user.validateUsername();
-
-	if (!(validateUsernameResult === [])) {
-		res.status(400).json({
-			"errors": validateUsernameResult
-		});
-		return;
-	}
-
 	let validatePasswordResult = user.validatePassword(password);
 
-	if (!(validatePasswordResult === [])) {
+	let validateResult = validateUsernameResult.concat(validatePasswordResult);
+
+	if (validateResult.length > 0) {
 		res.status(400).json({
-			"errors": validatePasswordResult
+			"errors": validateResult
 		});
 		return;
 	}

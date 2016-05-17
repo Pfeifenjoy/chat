@@ -1,7 +1,7 @@
 const express = require('express');
 
 //subroutes
-const users = require('./user');
+const users = require('./users');
 
 
 //Set up the Session and all the API-Routes 

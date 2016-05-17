@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const crypto    = require('crypto'); 
+const crypto = require('crypto');
 
 function defineUser(sequelize) {
 
@@ -41,7 +41,7 @@ function defineUser(sequelize) {
                 this.passwordHash = hash;
             },
 
-            'getUserRepresentation': function(){
+            'getUserRepresentation': function() {
 
                 // generate the gravatar icon
                 const baseUrl = '//www.gravatar.com/avatar/';
@@ -59,6 +59,53 @@ function defineUser(sequelize) {
                     'username': this.username,
                     'icon': gravatarUrl
                 };
+            },
+
+            'validateUsername': function() {
+                let errors = [];
+                if (username.length < core.config.user.usernameMinLength) {
+                    errors.push({
+                        'field': 'username',
+                        'errorMessage': 'Username must have at minimum ' + core.config.user.userusernameMinLength + ' chars.'
+                    });
+                }
+                if (username.length > core.config.user.usernameMaxLength) {
+                    errors.push({
+                        'field': 'username',
+                        'errorMessage': 'Username could not have more then ' + core.config.user.usernameMaxLength + ' chars.'
+                    });
+                }
+                if (/[^a-zA-Z0-9]/.test(username)) {
+                    errors.push({
+                        'field': 'username',
+                        'errorMessage': 'Username must be alphanumeric.'
+                    });
+                }
+                return errors;
+            },
+
+            'validatePassword': function(password) {
+                let errors = [];
+                if (password === undefined) {
+                    errors.push({
+                        'field': 'password',
+                        'errorMessage': 'A Password has to be provided.'
+                    });
+                    return;
+                }
+                if (password.length < core.config.user.passwordMinLength) {
+                    errors.push({
+                        'field': 'password',
+                        'errorMessage': 'Password must have at minimum ' + core.config.user.passwordMinLength + ' chars.'
+                    });
+                }
+                if (password.length > core.config.user.passwordMaxLength) {
+                    errors.push({
+                        'field': 'password',
+                        'errorMessage': 'Password could not have more then' + core.config.user.passwordMaxLength + ' chars.'
+                    });
+                }
+                return errors;
             }
         }
     });

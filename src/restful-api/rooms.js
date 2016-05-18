@@ -10,11 +10,12 @@ router.post("/", (req, res) => {
 
     let room = req.app.core.db.Room.build()
 
-    room.setUsers(members)
+    room.setUsers(members.map(member => member.id))
 
     room.save()
+    .then(room => room.getUserRepresentation())
     .then(room => {
-        res.json(room.getUserRepresentation())
+        res.json(room)
     })
     .catch(e => {
         //TODO check the type of the error. and add them to errors

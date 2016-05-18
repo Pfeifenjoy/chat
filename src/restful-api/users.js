@@ -28,7 +28,7 @@ let initUsers = (authenticationMiddleware) => {
 	 *	403 - The username already exists.
 	 *	
 	 */
-	router.post('/', (req, res) => {
+	router.post('/', authenticationMiddleware, (req, res) => {
 
 		let {
 			username,
@@ -244,9 +244,19 @@ let initUsers = (authenticationMiddleware) => {
                 });
             }
         })
-
     })
 	
+    router.get("/search", (req, res) => {
+        let { query } = req.query;
+
+        req.app.core.db.User.findAll({
+            where: [`username like '%${ query }%' or email like '%${ query }%'`]
+        })
+        .then(results => results.map(user => user.getUserRepresentation()))
+        .then(results => {
+            res.json(results);
+        });
+    });
 	/**
 	 * Finds a user by its ID.
 	 *

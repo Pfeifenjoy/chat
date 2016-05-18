@@ -29,6 +29,7 @@ core.init()
 		// Start the server
 		app.core = core;
 		if (apiEnabled) {
+			// add all routes
 			app.use(apiBaseUrl, routes.initialRoutes(core));
 		}
 

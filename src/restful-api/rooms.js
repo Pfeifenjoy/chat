@@ -19,6 +19,8 @@ router.post("/", (req, res) => {
         members
     } = req.body;
 
+    members = JSON.parse(members)["members"];
+
     if (members === undefined) {
         res.status(400).json({
             "errors": [{
@@ -29,10 +31,17 @@ router.post("/", (req, res) => {
         return;
     }
 
+    if (members.length < 2) {
+        res.status(400).json({
+            "errors": [{
+                'field': 'members',
+                'errorMessage': 'Members obeject must have at minimum two elements'
+            }]
+        });
+        return;
+    }
 
-    console(req.user.getUserRepresentation());
-
-    if (!req.user.getUserRepresentation() in members) {
+    if (members.findIndex(member => req.user.id === member.id) === -1) {
         res.status(401).json({
             "errors": [{
                 'field': 'members',
@@ -42,20 +51,26 @@ router.post("/", (req, res) => {
         return;
     }
 
-    let room = req.app.core.db.Room.build();
+    let room = req.app.core.db.Room.build().save();
 
-    room.setUsers(members.map(member => member.id));
+    let userAdded = room.then(room => {
+        return room.addUsers(members.map(member => member.id));
+    });
 
-    room.save()
-        .then(room => room.getUserRepresentation())
-        .then(room => {
-            res.json(room);
+    let userRepresentation = Promise.all([room, userAdded]).then(arg => {
+        let [room, _] = arg;
+        return room.getUserRepresentation();
+    });
+
+    userRepresentation.then(representation => {
+            res.json(representation);
         })
         .catch(e => {
+            console.log(e);
             res.status(400).json({
                 "errors": [{
                     'field': 'members',
-                    'errorMessage': 'Not all given members are existing in database.'
+                    'errorMessage': 'One of the given members is not known.'
                 }]
             });
         });
@@ -99,52 +114,26 @@ router.put("/", (req, res) => {
  * Returns on success:
  *  200 - A room object for the given username
  *
- * Returns on failure:
- *  500 - Unexpected error
  */
 router.get("/", (req, res) => {
-    let {
-        username
-    } = req.query;
 
-    if (username === undefined) {
-        res.status(400).json({
-            "errors": [{
-                'field': 'username',
-                'errorMessage': 'A username has to be provided.'
-            }]
-        });
-    }
+    req.user.getRooms().then(rooms => {
 
-    req.app.core.db.User.findOne({
-        where: {
-            username: username
-        }
-    }).then(user => {
-        req.app.core.db.Room.findAll({
-                include: [{
-                    model: User,
-                    through: {
-                        where: {
-                            user: user
-                        }
-                    }
-                }]
-            }).then(rooms => rooms.map(room => room.getUserRepresentation()))
-            .then(rooms => {
-                res.json(rooms);
+        let sync = Promise.resolve();
+
+        let room = [];
+        rooms.forEach(item => {
+            sync = item.getUserRepresentation().then(represi => {
+                room.push(represi);
             });
-    }).catch(error => {
-        res.status(500).json({
-            errors: [{
-                'errorMessage': 'Unexpected error.'
-            }]
-        });
-        console.log(e);
-    })
+        })
+        
+        sync.then(() => {
+            res.json(room);
+        })
 
 
+    });
 });
 
 module.exports = router;
-

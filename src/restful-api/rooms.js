@@ -29,6 +29,9 @@ router.post("/", (req, res) => {
         return;
     }
 
+
+    console(req.user.getUserRepresentation());
+
     if (!req.user.getUserRepresentation() in members) {
         res.status(401).json({
             "errors": [{
@@ -84,6 +87,62 @@ router.put("/", (req, res) => {
             }]
         });
     }
+
+});
+
+/**
+ * Returns all rooms of a user
+ *
+ * Expected parameters:
+ *  user
+ *
+ * Returns on success:
+ *  200 - A room object for the given username
+ *
+ * Returns on failure:
+ *  500 - Unexpected error
+ */
+router.get("/", (req, res) => {
+    let {
+        username
+    } = req.query;
+
+    if (username === undefined) {
+        res.status(400).json({
+            "errors": [{
+                'field': 'username',
+                'errorMessage': 'A username has to be provided.'
+            }]
+        });
+    }
+
+    req.app.core.db.User.findOne({
+        where: {
+            username: username
+        }
+    }).then(user => {
+        req.app.core.db.Room.findAll({
+                include: [{
+                    model: User,
+                    through: {
+                        where: {
+                            user: user
+                        }
+                    }
+                }]
+            }).then(rooms => rooms.map(room => room.getUserRepresentation()))
+            .then(rooms => {
+                res.json(rooms);
+            });
+    }).catch(error => {
+        res.status(500).json({
+            errors: [{
+                'errorMessage': 'Unexpected error.'
+            }]
+        });
+        console.log(e);
+    })
+
 
 });
 

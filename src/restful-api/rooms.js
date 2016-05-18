@@ -19,8 +19,7 @@ router.post("/", (req, res) => {
         members
     } = req.body;
 
-    members = JSON.parse(members)["members"];
-
+    // Check if member is provided
     if (members === undefined) {
         res.status(400).json({
             "errors": [{
@@ -31,17 +30,19 @@ router.post("/", (req, res) => {
         return;
     }
 
+    // Check if there are at minimum two members per room
     if (members.length < 2) {
         res.status(400).json({
             "errors": [{
                 'field': 'members',
-                'errorMessage': 'Members obeject must have at minimum two elements'
+                'errorMessage': 'Members object must have at minimum two elements'
             }]
         });
         return;
     }
 
-    if (members.findIndex(member => req.user.id === member.id) === -1) {
+    // Check if authenticated member is also in the room
+    if (members.findIndex(member => req.user.id === parseInt(member.id)) === -1) {
         res.status(401).json({
             "errors": [{
                 'field': 'members',
@@ -51,17 +52,21 @@ router.post("/", (req, res) => {
         return;
     }
 
+    // Create room 
     let room = req.app.core.db.Room.build().save();
 
+    // Add all new members to the room
     let userAdded = room.then(room => {
         return room.addUsers(members.map(member => member.id));
     });
 
+    // Get the user representation
     let userRepresentation = Promise.all([room, userAdded]).then(arg => {
         let [room, _] = arg;
         return room.getUserRepresentation();
     });
 
+    // Send the user representation to the client
     userRepresentation.then(representation => {
             res.json(representation);
         })
@@ -77,39 +82,90 @@ router.post("/", (req, res) => {
 });
 
 /**
- * Update a room
+ * Deletes a user from a room
  *
  * Expected parameters:
- *  room
+ *  roomId
  *
  * Returns on success:
- *  200 - A updated room object
+ *  200 - User could leave the room.
  *
  * Returns on failure:
- *  401 - authorized user is not in members object.
- *  500 - Unexpected error
+ *  400 - User does not exist in this room.
+ *  400 - Room id has to be provided.
+ *  500 - Unexpected error.
  */
-router.put("/", (req, res) => {
+router.put("/exit", (req, res) => {
     let {
-        room
+        roomId
     } = req.body;
 
-    if (!req.user.getUserRepresentation() in members) {
-        res.status(401).json({
+    // Check if roomId is provided
+    if (roomId === undefined) {
+        res.status(400).json({
             "errors": [{
-                'field': 'unauthorized',
-                'errorMessage': 'Authorized user is not in members object'
+                'field': 'roomId',
+                'errorMessage': 'Room id has to be provided.'
             }]
         });
+        return;
     }
 
+    // Find room
+    let room = req.app.core.db.Room.findById(roomId);
+
+    // Check if authenticated user is in the provided room
+    let userIsInRoom = room.then(room => {
+        return req.user.hasRoom(room);
+    });
+
+    // Remove member from room if he is there
+    let removeUserFromRoom = Promise.all([room, userIsInRoom]).then(arg => {
+        let [room, userIsInRoom] = arg;
+        if (userIsInRoom) {
+            return room.removeUser(req.user).then(() => {
+
+            }).catch(error => {
+                res.status(500).json({
+                    "errors": [{
+                        'field': 'unexpected',
+                        'errorMessage': 'Unexpected error.'
+                    }]
+                });
+            });
+        }
+    });
+
+    // Get the number of remaining members in the room
+    let getNumberOfUsers = Promise.all([room, removeUserFromRoom]).then(arg => {
+        let [room, _] = arg;
+        return room.countUsers();
+    });
+
+    // Delete room if there are less then two members
+    let deleteRoom = Promise.all([room, getNumberOfUsers]).then(arg => {
+        let [room, count] = arg;
+        if (count <= 1) {
+            return room.destroy();
+        }
+    });
+
+    // Send response or if there are errors send a error message
+    deleteRoom.then(() => {
+        res.send("Left room.");
+    }).catch(error => {
+        console.log(error);
+        res.status(400).json({
+            "errors": [{
+                'field': 'roomId',
+                'errorMessage': 'User does not exist in this room.'
+            }]
+        });
+    });
 });
 
 /**
- * Returns all rooms of a user
- *
- * Expected parameters:
- *  user
+ * Returns all rooms of the authenticated user
  *
  * Returns on success:
  *  200 - A room object for the given username
@@ -117,22 +173,26 @@ router.put("/", (req, res) => {
  */
 router.get("/", (req, res) => {
 
+    // Gets all rooms of the authenticated user
     req.user.getRooms().then(rooms => {
 
+        // sync promise to synchronise
         let sync = Promise.resolve();
 
+        // Object with all the room representations
         let room = [];
+
+        // For each room of the user get the user representation and add them to the object
         rooms.forEach(item => {
             sync = item.getUserRepresentation().then(represi => {
                 room.push(represi);
             });
         })
-        
+
+        // After all sent the object to the client
         sync.then(() => {
             res.json(room);
-        })
-
-
+        });
     });
 });
 

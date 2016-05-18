@@ -19,8 +19,6 @@ router.post("/", (req, res) => {
         members
     } = req.body;
 
-    members = JSON.parse(members)["members"];
-
     if (members === undefined) {
         res.status(400).json({
             "errors": [{
@@ -41,7 +39,7 @@ router.post("/", (req, res) => {
         return;
     }
 
-    if (members.findIndex(member => req.user.id === member.id) === -1) {
+    if (members.findIndex(member => req.user.id === parseInt(member.id)) === -1) {
         res.status(401).json({
             "errors": [{
                 'field': 'members',

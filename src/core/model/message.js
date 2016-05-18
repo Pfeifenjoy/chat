@@ -8,6 +8,17 @@ function defineMessage(core, sequelize, User, Room) {
     		'type': Sequelize.STRING(),
             'allowNull': false
     	}
+    }, { 
+        instanceMethods: {
+            getUserRepresentation() {
+                return {
+                    'id': this.id,
+                    'content': this.content,
+                    'author': this.user,
+                    'timestamp': this.createdAt
+                };
+            }
+        }
     });
 
     // Relations
@@ -15,7 +26,7 @@ function defineMessage(core, sequelize, User, Room) {
     // 1-to-many relationship between room and message
     // automagically adds the methods 
     //  - getMessages() and setMessages() to rooms.
-    Room.hasMany(Message, {'as': 'Messages'});		// automacically adds getMessages / setMessages to rooms.
+    Room.hasMany(Message, {'as': 'Messages'});
 
     // many-to-one relationship between message and user
     Message.belongsTo(User);

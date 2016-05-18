@@ -1,0 +1,366 @@
+{
+	"id": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+	"name": "Chat (dev - localhost:4000)",
+	"description": "",
+	"order": [
+		"56223d17-5710-32f2-213d-f60310e7fc07",
+		"0b73cb2f-c9e2-4e3c-de0d-8fbfba74b198",
+		"af5f374a-0a9c-0ce7-0832-c09c3e9af74c",
+		"8e104373-cc7a-d908-0e2b-7956bf28755b",
+		"25eb807c-c0f8-fd41-f5ef-700fbccdde06",
+		"6123605f-f714-0246-fc05-3edb9580d995",
+		"64ae0916-d895-2453-168a-5ae300e603da",
+		"81116e0a-a3ad-7e74-6efa-850009d3ed3c",
+		"7d158e81-77d6-03b0-8117-f2f78e1cc6de",
+		"bab952d9-c320-b940-5b24-f04a4a9e4f1d",
+		"2854f85b-8129-10e3-a3a2-5cdcbd37fd89"
+	],
+	"folders": [],
+	"timestamp": 1463568642094,
+	"owner": 0,
+	"remoteLink": "",
+	"public": false,
+	"requests": [
+		{
+			"id": "0b73cb2f-c9e2-4e3c-de0d-8fbfba74b198",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users",
+			"preRequestScript": "postman.setGlobalVariable(\"username\", \"usr\" + Date.now());\n",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{username}}",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "password",
+					"value": "asdfg",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "email",
+					"value": "ben@utzer.de",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 201\"] = responseCode.code === 201;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463570543197,
+			"name": "Create user",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "25eb807c-c0f8-fd41-f5ef-700fbccdde06",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{usernameNoPass}}",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "email",
+					"value": "ben@utzer.de",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "password",
+					"value": "a",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 400\"] = responseCode.code === 400;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463573630157,
+			"name": "Create user - short password",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "2854f85b-8129-10e3-a3a2-5cdcbd37fd89",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users/login",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{username}}",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "password",
+					"value": "asdfg",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 200\"] = responseCode.code === 200;\n\n\nvar jsonData = JSON.parse(responseBody);\npostman.setGlobalVariable(\"webtoken\", jsonData.token);\n",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463572969859,
+			"name": "Login",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "56223d17-5710-32f2-213d-f60310e7fc07",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users",
+			"preRequestScript": "postman.setGlobalVariable(\"usernameNoMail\", \"usrne\" + Date.now());\n",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{usernameNoMail}}",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "password",
+					"value": "asdfg",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 201\"] = responseCode.code === 201;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463573539589,
+			"name": "Create user (no email)",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "6123605f-f714-0246-fc05-3edb9580d995",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{username}}",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "password",
+					"value": "asdfg",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 403\"] = responseCode.code === 403;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463570793527,
+			"name": "Create user - existing user",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "64ae0916-d895-2453-168a-5ae300e603da",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users/login",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "password",
+					"value": "asdfg",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 400\"] = responseCode.code === 400;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463573289644,
+			"name": "Login - no username",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "7d158e81-77d6-03b0-8117-f2f78e1cc6de",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users/login",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "nonexistinguser",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "password",
+					"value": "asdfg",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 401\"] = responseCode.code === 401;\n",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463574108423,
+			"name": "Login - wrong username",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "81116e0a-a3ad-7e74-6efa-850009d3ed3c",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users/login",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{username}}",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 400\"] = responseCode.code === 400;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463573253323,
+			"name": "Login - no password",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "8e104373-cc7a-d908-0e2b-7956bf28755b",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users",
+			"preRequestScript": "postman.setGlobalVariable(\"usernameNoPass\", \"usrnp\" + Date.now());\n",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{usernameNoPass}}",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "email",
+					"value": "ben@utzer.de",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 400\"] = responseCode.code === 400;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463573524949,
+			"name": "Create user - no password",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "af5f374a-0a9c-0ce7-0832-c09c3e9af74c",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "password",
+					"value": "asdfg",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "email",
+					"value": "ben@utzer.de",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 400\"] = responseCode.code === 400;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463573426676,
+			"name": "Create user - no username",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		},
+		{
+			"id": "bab952d9-c320-b940-5b24-f04a4a9e4f1d",
+			"headers": "",
+			"url": "localhost:4000/api/v1/users/login",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "username",
+					"value": "{{username}}",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "password",
+					"value": "wrong password",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": "tests[\"Status code is 401\"] = responseCode.code === 401;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1463573027970,
+			"name": "Login - wrong password",
+			"description": "",
+			"collectionId": "b9427c37-abdb-7c07-01b0-7c2811fb0fe8",
+			"responses": []
+		}
+	]
+}

@@ -263,8 +263,8 @@ router.put("/", (req, res) => {
 					}]
 				});
 			}
-		})
-})
+		});
+});
 
 router.get("/search", (req, res) => {
 	let {

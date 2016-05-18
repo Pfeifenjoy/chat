@@ -7,6 +7,7 @@ router.post("/", (req, res) => {
     let {
         members
     } = req.body;
+    console.log(members);
 
     let room = req.app.core.db.Room.build()
 

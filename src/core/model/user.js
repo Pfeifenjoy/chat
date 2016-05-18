@@ -184,9 +184,11 @@ function defineUser(core, sequelize) {
              * The secret and the expiratation TimeStamp are defined in the settings file.
              */
             'createWebToken': function() {
-                let token = jwt.sign(this.toJSON(), core.config.session.secret, {
-                    expiresIn: core.config.session.expire
-                });
+                let token = jwt.sign(
+                    {'id': this.id}, 
+                    core.config.session.secret, 
+                    {expiresIn: core.config.session.expire}
+                );
                 return token;
             }
         }

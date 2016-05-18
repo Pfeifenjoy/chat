@@ -5,6 +5,15 @@ function defineRoom(core, sequelize, User) {
     // The fields
     let Room = sequelize.define('room', {
         /* A room has no fields, just relations to other tables  */
+    }, { 
+        instanceMethods: {
+            getUserRepresentation() {
+                return {
+                    "id": this.id,
+                    "members": this.getUsers()
+                }
+            }
+        }
     });
 
     // The relations

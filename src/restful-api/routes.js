@@ -1,8 +1,9 @@
-const express = require('express');
-var expressJwt = require('express-jwt');
+const express = require("express");
+var expressJwt = require("express-jwt");
 
 //subroutes
-const users = require('./users');
+const users = require("./users");
+const rooms = require("./rooms");
 
 let authenticationMiddleware; 
 
@@ -17,7 +18,8 @@ function initialRoutes(core) {
     users.initUsers(authenticationMiddleware);
 
     // add the routes
-    router.use('/users', users);
+    router.use("/users", users);
+    router.use("/rooms", rooms);
     
     return router;
 }

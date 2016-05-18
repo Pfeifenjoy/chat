@@ -35,7 +35,7 @@ router.post("/", (req, res) => {
         res.status(400).json({
             "errors": [{
                 'field': 'members',
-                'errorMessage': 'Members obeject must have at minimum two elements'
+                'errorMessage': 'Members object must have at minimum two elements'
             }]
         });
         return;
@@ -77,39 +77,83 @@ router.post("/", (req, res) => {
 });
 
 /**
- * Update a room
+ * Deletes a user from a room
  *
  * Expected parameters:
- *  room
+ *  roomId
  *
  * Returns on success:
- *  200 - A updated room object
+ *  200 - User could leave the room.
  *
  * Returns on failure:
- *  401 - authorized user is not in members object.
- *  500 - Unexpected error
+ *  400 - User does not exist in this room.
+ *  400 - Room id has to be provided.
+ *  500 - Unexpected error.
  */
-router.put("/", (req, res) => {
+router.put("/exit", (req, res) => {
     let {
-        room
+        roomId
     } = req.body;
 
-    if (!req.user.getUserRepresentation() in members) {
-        res.status(401).json({
+    if (roomId === undefined) {
+        res.status(400).json({
             "errors": [{
-                'field': 'unauthorized',
-                'errorMessage': 'Authorized user is not in members object'
+                'field': 'roomId',
+                'errorMessage': 'Room id has to be provided.'
             }]
         });
+        return;
     }
 
+    let room = req.app.core.db.Room.findById(roomId);
+
+    let userIsInRoom = room.then(room => {
+        return req.user.hasRoom(room);
+    });
+
+    let removeUserFromRoom = Promise.all([room, userIsInRoom]).then(arg => {
+        let [room, userIsInRoom] = arg;
+        if (userIsInRoom) {
+            return room.removeUser(req.user).then(() => {
+
+            }).catch(error => {
+                res.status(500).json({
+                    "errors": [{
+                        'field': 'unexpected',
+                        'errorMessage': 'Unexpected error.'
+                    }]
+                });
+            });
+        }
+    });
+
+    let getNumberOfUsers = Promise.all([room, removeUserFromRoom]).then(arg => {
+        let [room, _] = arg;
+        return room.countUsers();
+    });
+
+    let deleteRoom = Promise.all([room, getNumberOfUsers]).then(arg => {
+        let [room, count] = arg;
+        if (count <= 1) {
+            return room.destroy();
+        }
+    });
+
+    deleteRoom.then(() => {
+        res.send("Left room.");
+    }).catch(error => {
+        console.log(error);
+        res.status(400).json({
+            "errors": [{
+                'field': 'roomId',
+                'errorMessage': 'User does not exist in this room.'
+            }]
+        });
+    });
 });
 
 /**
  * Returns all rooms of a user
- *
- * Expected parameters:
- *  user
  *
  * Returns on success:
  *  200 - A room object for the given username
@@ -127,12 +171,10 @@ router.get("/", (req, res) => {
                 room.push(represi);
             });
         })
-        
+
         sync.then(() => {
             res.json(room);
-        })
-
-
+        });
     });
 });
 

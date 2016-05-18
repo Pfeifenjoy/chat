@@ -5,15 +5,24 @@
 
 A message is a Javascript object that is encoded as a JSON string. This object has to follow the following format:
 
+Client -> Server:
 ```
 {
-	'type': string
-	'payload': object
+    'type': string 
+    'transactionid': int
+    'payload': object
+}
+```
+
+Server -> Client:
+```
+{
+    'type': string 
+    'payload': object
 }
 ```
 
 The format of the payload is dependant of the message type.
-Both messages sent from the client to the server, as well as messages from the server to the client follow this format.
 
 ## Message types
 
@@ -25,10 +34,10 @@ depending on whether the client could be logged in successfully.
 
 ```
 {
-	'type': 'AUTHENTICATE'
-	'payload': {
-		'token': string 		// the webtoken
-	}
+    'type': 'AUTHENTICATE'
+    'payload': {
+        'token': string         // the webtoken
+    }
 }
 ```
 
@@ -38,8 +47,8 @@ Will be sent to a client after a successfull authentication.
 
 ```
 {
-	'type': 'WELCOME'
-	'payload': {}
+    'type': 'WELCOME'
+    'payload': {}
 }
 ```
 
@@ -52,8 +61,8 @@ Will be sent to a client when
 
 ```
 {
-	'type': 'UNAUTHENTICATED'
-	'payload': {}
+    'type': 'UNAUTHENTICATED'
+    'payload': {}
 }
 ```
 
@@ -63,7 +72,23 @@ Will be sent to the client, when something went wrong.
 
 ```
 {
-	'type': 'UNAUTHENTICATED'
-	'payload': {/* Depending on the type of error there might be additional information here. */}
+    'type': 'ERROR'
+    'payload': {
+        'transactionid': int 
+        /* Depending on the type of error there might be additional information here. */
+    }
+}
+```
+
+### SUCCESS
+
+Will be sent to the client, when something went right.
+
+```
+{
+    'type': 'SUCCESS'
+    'payload': {
+        'transactionid': int
+    }
 }
 ```

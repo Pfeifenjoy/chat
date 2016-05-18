@@ -1,11 +1,13 @@
 const db = require('./db.js');
-var jwt = require('jsonwebtoken');
+const MessageRouter = require('./../websockets/routing.js').MessageRouter;
+const jwt = require('jsonwebtoken');
 
 class Core {
 
 	constructor(config) {
 		this.config = config;
 		this.db = db.connect(this);
+		this.router = new MessageRouter(this);
 	}
 
 	/**

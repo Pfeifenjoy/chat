@@ -1,13 +1,214 @@
 const WebSocketServer = require('ws').Server
 
-/**
- * Assembles a message out of a type and a payload.
- */
-function makeMessage(type, payload = {}) {
-	return JSON.stringify({
-		'type': type,
-		'payload': payload
-	});
+class Connection{
+	
+	constructor(core, client) {
+
+		// init
+		this.core = core;
+		this.client = client;
+		this.authenticated = false;
+		this.expires = 0;
+		this.user = null;
+		this.subscriptionid = 0;
+		this.authenticating = false;
+
+		// register events
+		this.client.on('message', this.onMessage.bind(this));
+		this.client.on('close', this.onClose.bind(this));
+
+		// log
+		console.log('ws: Client connected.');
+	}
+
+	//---- Authentication ------------------------------------------------------------------------
+
+	/**
+	 * Returns a boolean indicating, whether
+	 * the given message type may be handeled.
+	 */
+	isAuthenticated(){
+		return authenticated && expires > Date.now();
+	}
+
+	/**
+	 * Sets the authenticated user
+	 */
+	setAuthenticated(user, expires) {
+		// do not authenticate multiple times at once
+		if (this.authenticating) {
+			return Promise.reject();
+		}
+		this.authenticating = true;
+		
+		// unauthenticate the old authenticated user
+		if (this.authenticated) {
+			this.unAuthenticate();
+		}
+
+		// register at the WsRouter
+		let registered = this.core.router.registerUser(user, this.onMessageFromRouter.bind(this));
+
+		// finalize
+		return registered
+			.then(subscriptionid => {
+				this.subscriptionid = subscriptionid;
+				this.user = user;
+				this.expires = expires;
+				this.authenticated = true;
+				this.authenticating = false;
+			})
+			.error(e => {
+				this.authenticating = false;
+				throw e;
+			});
+	}
+
+	/**
+	 * resets the authenticated user.
+	 */
+	unAuthenticate() {
+		if (this.authenticated) {
+			this.authenticated = false;
+			this.core.router.unregisterUser(this.user, this.subscriptionid);
+		}
+	}
+
+	/**
+	 * processes an AUTHENTICATE message.
+	 */
+	processAuthentication(token, transactionid) {
+		this.core.checkWebToken(token)
+			.then(user => {
+				// token is ok
+				this.setAuthenticated(user, user.expires)
+					.then(() => {
+						this.sendWelcome(transactionid);
+						console.log('ws: Authentication: successful as: ', user.username);
+					})
+					.catch(e => {
+						this.sendError(transactionid);
+						this.unAuthenticate();
+					});
+				
+			})
+			.catch(err => {
+				// auth failed
+				this.sendUnauthenticated(transactionid);
+				this.unAuthenticate();
+				console.log('ws: Authentication: failed for token: ', token);
+				console.log(err);
+			});
+	}
+
+	//---- Message Handling ----------------------------------------------------------------------
+
+	/**
+	 * Processes a message
+	 */
+	processMessage(type, payload, transactionid){
+		this.sendError(transactionid, 'unsupported_message_type');
+	}
+
+	//---- Events --------------------------------------------------------------------------------
+
+	/**
+	 * Gets called when the router wants to
+	 * send a message over this connection.
+	 */
+	onMessageFromRouter() {
+
+	}
+
+	/**
+	 * Gets called when something arrives at the websocket.
+	 */
+	onMessage(text, flags){
+		let transactionid;
+
+		try {
+
+			// parse the message
+			if (flags.binary) return;
+			console.log('ws: Received message: ', text);
+			let message = JSON.parse(text);
+			let type = message.type || '';
+			let payload = message.payload || {};
+			transactionid = message.transactionid || -1;
+
+			// authenticate
+			if (type === 'AUTHENTICATE') {
+				let token = payload.token;
+				this.processAuthentication(token, transactionid);
+				return;
+			}
+
+			// check authentication for all other messages
+			if (!this.isAuthenticated()) {
+				this.sendUnauthenticated(transactionid);
+				console.log('ws: Access denied.');
+				return;
+			}
+
+			// handle the message
+			this.processMessage(type, payload, transactionid);
+
+		} catch (e) {
+			this.sendError(transactionid);
+			console.log('ws: Unexpected error:');
+			console.log(e);
+		}
+	}
+
+	/**
+	 * Gets called, when the connection closes.
+	 */
+	onClose(){
+		this.unAuthenticate();
+		console.log('ws: Connection closed.');
+	}
+
+
+	//---- Sending -------------------------------------------------------------------------------
+
+	/**
+	 * Sends a message
+	 */
+	sendMessage(type, payload = {}) {
+		let message = JSON.stringify({
+			'type': type,
+			'payload': payload
+		});
+		this.client.send(message);
+	}
+
+	/**
+	 * Sends an ERROR message.
+	 */
+	sendError(transactionid=undefined, type='unknown') {
+		this.sendMessage('ERROR', {
+			'type': type, 
+			'transactionid': transactionid
+		});
+	}
+
+	/**
+	 * Sends an UNAUTHENTICATED message.
+	 */
+	sendUnauthenticated(transactionid) {
+		this.sendMessage('UNAUTHENTICATED', {
+			'transactionid': transactionid
+		});
+	}
+
+	/**
+	 * Sends a WELCOME message.
+	 */
+	sendWelcome(transactionid) {
+		this.sendMessage('WELCOME', {
+			'transactionid': transactionid
+		});
+	}
 }
 
 /**
@@ -27,71 +228,7 @@ function startServer(core) {
 
 	// when a user connects...
 	function onConnection(client){
-		let authenticated = false;
-		let expires = 0;
-		let user = null;
-
-		console.log('ws: Client connected.');
-
-		// when a message from the user arrives...
-		client.on('message', function(text, flags) {
-
-			try {
-
-				// parse the message
-				if (flags.binary) return;
-				let message = JSON.parse(text);
-				let type = message.type || '';
-				let payload = message.payload || {};
-				console.log('ws: Received message: ', text);
-
-				// authenticate the user if requested
-				if (type === 'AUTHENTICATE') {
-					let token = payload.token;
-					core.checkWebToken(token)
-						.then(newUser => {
-
-							// auth successful
-							authenticated = true;
-							expires = newUser.expires;
-							user = newUser;
-							client.send(makeMessage('WELCOME'));
-							console.log('ws: Authentication: successful as: ', user.username);
-
-						})
-						.catch(err => {
-
-							// auth failed
-							client.send(makeMessage('UNAUTHENTICATED'));
-							authenticated = false;
-							console.log('ws: Authentication: failed for token: ', token);
-						});
-					return;
-				}
-
-				// for all other messages apart from 'AUTHENTICATE', authentication is needed. so...
-
-				// check authentication
-				if (!authenticated || expires < Date.now()) {
-					client.send(makeMessage('UNAUTHENTICATED'));
-					console.log('ws: Authentication: Access denied.');
-					return;
-				}
-
-				// handle the request
-				client.send(makeMessage('ERROR', {'type': 'unsupported_message_type'}));
-
-			} catch (e) {
-				client.send(makeMessage('ERROR', {'type': 'unknown'}));
-				console.log('ws: Unexpected error:');
-				console.log(e);
-			}
-
-		});
-
-		client.on('close', function(){
-			console.log('ws: Connection closed.');
-		});
+		let connection = new Connection(core, client);
 	}
 	wss.on('connection', onConnection);
 

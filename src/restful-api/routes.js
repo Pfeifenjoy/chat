@@ -21,7 +21,7 @@ function initialRoutes(core) {
 
         // is authentication needed for this url?
         let ignore = ignoreUrls
-            .map(ignore => ignore.url = req.url && ignore.method == req.method)
+            .map(ignore => ignore.url === req.url && ignore.method === req.method)
             .reduce((a, b) => a || b);
 
         if (ignore){

@@ -1,7 +1,8 @@
 const express = require('express');
 
 //subroutes
-const users = require('./users');
+const users = require("./users");
+const rooms = require("./rooms");
 
 
 //Set up the Session and all the API-Routes 
@@ -14,12 +15,16 @@ function initialRoutes(core) {
         
         // urls that don't need authentification
         const ignoreUrls = [
-            '/users',
-            '/users/login'
+            {'url': '/users'        , 'method': 'POST'},
+            {'url': '/users/login'  , 'method': 'POST'}
         ];
 
         // is authentication needed for this url?
-        if (ignoreUrls.indexOf(req.url) != -1){
+        let ignore = ignoreUrls
+            .map(ignore => ignore.url = req.url && ignore.method == req.method)
+            .reduce((a, b) => a || b);
+
+        if (ignore){
             next();
             return;
         }
@@ -48,19 +53,11 @@ function initialRoutes(core) {
     let router = new express.Router;
 
     // configure authentication
-    /*let authenticationMiddleware = expressJwt({
-            'secret': core.config.session.secret}
-        ).unless({ path: [
-            {'url': apiBaseUrl + '/users'      , methods: ['POST']},
-            {'url': apiBaseUrl + '/users/login', methods: ['POST']}
-        ]});
-
-    router.use(authenticationMiddleware);
-*/
     router.use(auth);
 
     // add the routes
-    router.use('/users', users);
+    router.use("/users", users);
+    router.use("/rooms", rooms);
     
     return router;
 }

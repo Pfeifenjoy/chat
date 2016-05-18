@@ -5,10 +5,12 @@
   "author": "Arwed Mett, Philipp Pütz, Tobias Dorra",
   "main": "src/index.js",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "nodemon ./src/index.js"
   },
   "keywords": [],
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "1.9.2"
+  },
   "dependencies": {
     "body-parser": "1.15.0",
     "express": "^4.13.4",

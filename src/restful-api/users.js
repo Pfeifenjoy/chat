@@ -28,8 +28,6 @@ let router = new express.Router;
  */
 router.post('/', (req, res) => {
 
-	console.log(req.body);
-
 	let {
 		username,
 		password,
@@ -187,53 +185,78 @@ router.get('/restricted', (req, res) => {
 });
 
 
-/**
- * Finds a user by its ID.
- *
- * Expected Parameters:
- *	id - the id of the wanted user
- *
- * Returns on success:
- * 	200 - the user that was requested.
- * 	The user object has the same format like that of the 'POST /' route to create a new user.
- *
- * Returns on failure:
- * 	400 - the user ID is missing
- * 	404 - no user with the given id was found.
- * 	
- */
-/*
-// is not needed.
-router.get('/getUser', authenticationMiddleware, (req, res) => {
 
-	let {
-		id
-	} = req.query;
+router.put("/",  (req, res) => {
+    let {
+        id,
+        username,
+        email,
+        oldpassword,
+        newpassword
+    } = req.body;
+    
+    let errors = [];
 
-	if (id === undefined) {
-		res.status(400).json({
-			errors: [{
-				'field': 'id',
-				'errorMessage': 'User id has to be provided.'
-			}]
-		});
-		return;
-	}
+    if(newpassword && oldpassword !== req.user.password) {
+        errors.push({ field: "oldpassword", errorMessage: "Wrong password" })
+        res.status(403).json(errors)
+    }
 
-	req.app.core.db.User.findById(id).then(user => {
-			res.status(200).json(user.getUserRepresentation());
-		})
-		.catch(function(e) {
-			res.status(404).json({
-				"errors": [{
-					'field': 'id',
-					'errorMessage': 'Cannot find user.'
-				}]
-			});
-		});
+    let user = req.app.core.db.User.findById(id)
+    .then(user => {
+        if(user === null) {
+            let error = new Error();
+            error.name = "Client Error";
+            error.errors = [{ field: "id", errorMessage: "Unknown user id." }];
+            throw error;
+        }
+        if(username)
+            user.set("username", username)
+        if(email)
+            user.set("email", email)
+        
+        if(newpassword) {
+            // Validate the user + password
+            let validateResult = user.validate()
+            let validatePasswordResult = user.validatePassword(newpassword)
 
+            validateResult = validateResult.concat(validatePasswordResult)
 
-});
-*/
+            if (validateResult.length > 0) {
+                let error = new Error();
+                error.name = "Client Error";
+                error.errors = validateResult;
+                throw error;
+            }
+            user.setPassword(newpassword);
+        }
+        return user;
+    })
+    .then(user => user.save())
+    .then(user => {
+        res.status(201).json(user.getUserRepresentation());
+    })
+    .catch(function(e) {
+        if (e.name && e.name == 'SequelizeUniqueConstraintError') {
+            res.status(403).json({
+                errors: [{
+                    'field': 'username',
+                    'errorMessage': 'Username is already in use.'
+                }]
+            });
+        } else if (e.name && e.name === "Client Error") {
+            res.status(400).json({
+                errors: e.errors
+            });
+        }else {
+            console.log(e.name);
+            res.status(500).json({
+                errors: [{
+                    'errorMessage': 'Unexpected error.'
+                }]
+            });
+        }
+    })
+})
 
 module.exports = router;

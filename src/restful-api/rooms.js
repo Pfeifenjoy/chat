@@ -18,7 +18,6 @@ router.post("/", (req, res) => {
     let {
         members
     } = req.body;
-    console.log(members);
 
     if (members === undefined) {
         res.status(400).json({

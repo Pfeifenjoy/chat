@@ -1,18 +1,19 @@
 {
-    "name": "chat",
-    "version": "1.0.0",
-    "description": "A tiny chat application.",
-    "author": "Arwed Mett, Philipp Pütz, Tobias Dorra",
-    "main": "src/index.js",
-    "scripts": {
-        "start": "node ./src/index.js"
-    },
-    "keywords": [],
-    "devDependencies": {},
-    "dependencies": {
-        "express": "^4.13.4",
-        "sequelize": "^3.23.2",
-        "sqlite3": "^3.1.4",
-        "body-parser": "1.15.0"
-    }
+  "name": "chat",
+  "version": "1.0.0",
+  "description": "A tiny chat application.",
+  "author": "Arwed Mett, Philipp Pütz, Tobias Dorra",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ./src/index.js"
+  },
+  "keywords": [],
+  "devDependencies": {},
+  "dependencies": {
+    "body-parser": "1.15.0",
+    "express": "^4.13.4",
+    "sequelize": "^3.23.2",
+    "sqlite3": "^3.1.4",
+    "ws": "^1.1.0"
+  }
 }

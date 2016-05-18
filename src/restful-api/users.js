@@ -185,7 +185,19 @@ router.get('/restricted', (req, res) => {
 });
 
 
-
+/**
+ * Updates a user
+ *
+ * On success:
+ * 200 - Returns the user that corresponds to the token.
+ *
+ * On failure:
+ * 403 - Wrong password.
+ * 403 - Username in already in use.
+ * 403 - You are only allowed to upadte yourself.
+ * 400 - Client errors.
+ * 500 - Unexpected error
+ */
 router.put("/", (req, res) => {
 	let {
 		id,
@@ -197,6 +209,18 @@ router.put("/", (req, res) => {
 
 	let errors = [];
 
+	// Check if authenticated user only updates himself
+	if (req.user.id !== id) {
+		res.status(403).json({
+			errors: [{
+				'field': 'id',
+				'errorMessage': 'You are only allowed to upadte yourself.'
+			}]
+		});
+		return;
+	}
+
+	// Check if old password is unequal to new pasword
 	if (newpassword && oldpassword !== req.user.password) {
 		errors.push({
 			field: "oldpassword",
@@ -206,8 +230,10 @@ router.put("/", (req, res) => {
 		return;
 	}
 
+	// Find user
 	let user = req.app.core.db.User.findById(id)
 		.then(user => {
+			// Havnt found user so throw error and inform client
 			if (user === null) {
 				let error = new Error();
 				error.name = "Client Error";
@@ -217,6 +243,7 @@ router.put("/", (req, res) => {
 				}];
 				throw error;
 			}
+			// If values are set => update them
 			if (username)
 				user.set("username", username)
 			if (email)
@@ -239,11 +266,13 @@ router.put("/", (req, res) => {
 			}
 			return user;
 		})
-		.then(user => user.save())
+		.then(user => user.save()) // Save user
 		.then(user => {
+			// Send new user object to client
 			res.status(201).json(user.getUserRepresentation());
 		})
 		.catch(function(e) {
+			// Handle errors
 			if (e.name && e.name == 'SequelizeUniqueConstraintError') {
 				res.status(403).json({
 					errors: [{
@@ -266,16 +295,33 @@ router.put("/", (req, res) => {
 		});
 });
 
+/**
+ * Searches for a user
+ *
+ * On success:
+ * 200 - Returns a result set (contains all maching users)
+ *
+ */
 router.get("/search", (req, res) => {
 	let {
 		query
 	} = req.query;
 
+	// Execute the query
 	req.app.core.db.User.findAll({
 			where: [`username like '%${ query }%' or email like '%${ query }%'`]
 		})
-		.then(results => results.map(user => user.getUserRepresentation()))
+		.then(results => results.map(user => user.getUserRepresentation())) // Get user representations for all results
 		.then(results => {
+			// Search for index of the requesting user <=> myself
+			let mySelfIndex = results.findIndex(user => req.user.id === user.id);
+
+			if (mySelfIndex >= 0) {
+				// Remove my self
+				results.splice(mySelfIndex, 1);
+			}
+
+			// Send results to client
 			res.json(results);
 		});
 });

@@ -8,14 +8,20 @@ function defineRoom(core, sequelize, User) {
     }, { 
         instanceMethods: {
             getUserRepresentation() {
-                return this.getUsers()
-                .then(members => members.map(member => member.getUserRepresentation()))
-                .then(members => {
-                    return {
-                        "id": this.id,
-                        members
-                    }
-                })
+                let members = this.getUsers();
+                let messages = this.getMessages();
+                let userRepresentation = Promise.all([members, messages])
+                    .then(arg => {
+                        let [members, messages] = arg;
+                        let memberUsrRepr = members.map(m => m.getUserRepresentation());
+                        let messagesUsrRepr = messages.map(m => m.getUserRepresentation());
+                        return {
+                            'id': this.id,
+                            'members': memberUsrRepr,
+                            'messages': messagesUsrRepr
+                        };
+                    });
+                return userRepresentation;
             }
         }
     });

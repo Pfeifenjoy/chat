@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const crypto = require('crypto');
+var jwt = require('jsonwebtoken');
 
 function defineUser(core, sequelize) {
 
@@ -58,7 +59,8 @@ function defineUser(core, sequelize) {
              */
             'getGravatarUrl': function() {
                 const baseUrl = '//www.gravatar.com/avatar/';
-                let gravatarEmail = this.email
+                let email = this.email || '';
+                let gravatarEmail = email
                     .toLowerCase()
                     .trim();
                 let gravatarHash = crypto
@@ -66,6 +68,7 @@ function defineUser(core, sequelize) {
                     .update(gravatarEmail)
                     .digest('hex');
                 let gravatarUrl = baseUrl + gravatarHash;
+                return gravatarUrl;
             },
 
             /**
@@ -93,6 +96,16 @@ function defineUser(core, sequelize) {
              */
             'validate': function() {
                 let errors = [];
+
+
+                // a username must be present
+                if (this.username === undefined) {
+                    errors.push({
+                        'field': 'username',
+                        'errorMessage': 'A username must be given.'
+                    });
+                    return (errors);
+                }
 
                 // the username must not be to short or to long. 
                 if (this.username.length < core.config.user.usernameMinLength) {
@@ -143,8 +156,9 @@ function defineUser(core, sequelize) {
                 if (password === undefined || password === '') {
                     errors.push({
                         'field': 'password',
-                        'errorMessage': 'A Password has to be provided.'
+                        'errorMessage': 'A password has to be provided.'
                     });
+                    return errors;
                 }
 
                 // check the password size
@@ -161,6 +175,19 @@ function defineUser(core, sequelize) {
                     });
                 }
                 return errors;
+            },
+
+            /**
+             * Creates a web token that can be used to authenticate a user 
+             * at the server.
+             *
+             * The secret and the expiratation TimeStamp are defined in the settings file.
+             */
+            'createWebToken': function() {
+                let token = jwt.sign(this.toJSON(), core.config.session.secret, {
+                    expiresIn: core.config.session.expire
+                });
+                return token;
             }
         }
     });

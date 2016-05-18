@@ -10,8 +10,8 @@
 	},
 	"user": {
 		"usernameMinLength": 3,
-		"usernameMaxLength": 16,
-		"passwordMinLength": 8,
+		"usernameMaxLength": 25,
+		"passwordMinLength": 3,
 		"passwordMaxLength": 21
 	},
 	"http": {
@@ -20,6 +20,9 @@
 			"enabled": true,
 			"baseUrl": "/api/v1"
 		}
+	},
+	"websocket": {
+		"port": 4001
 	},
 	"session":{
 		"secret": "ARW455tgjko554458ahuikkjggs896asd546ASDcfr45aAdFKIasf5465AWD56a4sdASD5645QWasonghneASd854TZUa546",

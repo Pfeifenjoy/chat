@@ -186,89 +186,98 @@ router.get('/restricted', (req, res) => {
 
 
 
-router.put("/",  (req, res) => {
-    let {
-        id,
-        username,
-        email,
-        oldpassword,
-        newpassword
-    } = req.body;
-    
-    let errors = [];
+router.put("/", (req, res) => {
+	let {
+		id,
+		username,
+		email,
+		oldpassword,
+		newpassword
+	} = req.body;
 
-    if(newpassword && oldpassword !== req.user.password) {
-        errors.push({ field: "oldpassword", errorMessage: "Wrong password" })
-        res.status(403).json(errors)
-    }
+	let errors = [];
 
-    let user = req.app.core.db.User.findById(id)
-    .then(user => {
-        if(user === null) {
-            let error = new Error();
-            error.name = "Client Error";
-            error.errors = [{ field: "id", errorMessage: "Unknown user id." }];
-            throw error;
-        }
-        if(username)
-            user.set("username", username)
-        if(email)
-            user.set("email", email)
-        
-        if(newpassword) {
-            // Validate the user + password
-            let validateResult = user.validate()
-            let validatePasswordResult = user.validatePassword(newpassword)
+	if (newpassword && oldpassword !== req.user.password) {
+		errors.push({
+			field: "oldpassword",
+			errorMessage: "Wrong password"
+		})
+		res.status(403).json(errors);
+		return;
+	}
 
-            validateResult = validateResult.concat(validatePasswordResult)
+	let user = req.app.core.db.User.findById(id)
+		.then(user => {
+			if (user === null) {
+				let error = new Error();
+				error.name = "Client Error";
+				error.errors = [{
+					field: "id",
+					errorMessage: "Unknown user id."
+				}];
+				throw error;
+			}
+			if (username)
+				user.set("username", username)
+			if (email)
+				user.set("email", email)
 
-            if (validateResult.length > 0) {
-                let error = new Error();
-                error.name = "Client Error";
-                error.errors = validateResult;
-                throw error;
-            }
-            user.setPassword(newpassword);
-        }
-        return user;
-    })
-    .then(user => user.save())
-    .then(user => {
-        res.status(201).json(user.getUserRepresentation());
-    })
-    .catch(function(e) {
-        if (e.name && e.name == 'SequelizeUniqueConstraintError') {
-            res.status(403).json({
-                errors: [{
-                    'field': 'username',
-                    'errorMessage': 'Username is already in use.'
-                }]
-            });
-        } else if (e.name && e.name === "Client Error") {
-            res.status(400).json({
-                errors: e.errors
-            });
-        }else {
-            console.log(e.name);
-            res.status(500).json({
-                errors: [{
-                    'errorMessage': 'Unexpected error.'
-                }]
-            });
-        }
-    })
+			if (newpassword) {
+				// Validate the user + password
+				let validateResult = user.validate()
+				let validatePasswordResult = user.validatePassword(newpassword)
+
+				validateResult = validateResult.concat(validatePasswordResult)
+
+				if (validateResult.length > 0) {
+					let error = new Error();
+					error.name = "Client Error";
+					error.errors = validateResult;
+					throw error;
+				}
+				user.setPassword(newpassword);
+			}
+			return user;
+		})
+		.then(user => user.save())
+		.then(user => {
+			res.status(201).json(user.getUserRepresentation());
+		})
+		.catch(function(e) {
+			if (e.name && e.name == 'SequelizeUniqueConstraintError') {
+				res.status(403).json({
+					errors: [{
+						'field': 'username',
+						'errorMessage': 'Username is already in use.'
+					}]
+				});
+			} else if (e.name && e.name === "Client Error") {
+				res.status(400).json({
+					errors: e.errors
+				});
+			} else {
+				console.log(e.name);
+				res.status(500).json({
+					errors: [{
+						'errorMessage': 'Unexpected error.'
+					}]
+				});
+			}
+		})
 })
 
 router.get("/search", (req, res) => {
-    let { query } = req.query;
+	let {
+		query
+	} = req.query;
 
-    req.app.core.db.User.findAll({
-        where: [`username like '%${ query }%' or email like '%${ query }%'`]
-    })
-    .then(results => results.map(user => user.getUserRepresentation()))
-    .then(results => {
-        res.json(results);
-    });
+	req.app.core.db.User.findAll({
+			where: [`username like '%${ query }%' or email like '%${ query }%'`]
+		})
+		.then(results => results.map(user => user.getUserRepresentation()))
+		.then(results => {
+			res.json(results);
+		});
 });
 
 module.exports = router;

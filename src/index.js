@@ -3,6 +3,7 @@ const Core          = require('./core/core').Core;
 const express       = require('express');
 const bodyParser    = require('body-parser');
 const routes        = require('./restful-api/routes');
+const websockets    = require('./websockets/server.js');
 
 // read the configuration
 const configFile = './files/config/chat-config.json';
@@ -26,6 +27,9 @@ const core = new Core(config);
 
 core.init()
     .then(() => {
+        // Start Websockets server 
+        websockets.startServer(core);
+
         // Start the server
         app.core = core;
         if (apiEnabled) {

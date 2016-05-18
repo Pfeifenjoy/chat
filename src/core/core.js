@@ -42,9 +42,13 @@ class Core {
 		let user = verify
 			.then(decode => {
 				return this.db.User.findById(decode.id);
-			})
-			.then(user => {
+			});
+
+		let result = Promise.all([verify, user])
+			.then(args => {
+				let [token, user] = args;
 				if (user) {
+					user.expires = token.exp * 1000;
 					return user;
 				} else {
 					throw "Unknown user";
@@ -55,7 +59,7 @@ class Core {
 				throw e;
 			});
 
-		return user;
+		return result;
 	}
 }
 

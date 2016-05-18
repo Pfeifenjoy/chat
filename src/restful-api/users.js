@@ -210,11 +210,11 @@ router.put("/", (req, res) => {
 	let errors = [];
 
 	// Check if authenticated user only updates himself
-	if (req.user.id !== id) {
+	if (req.user.id !== parseInt(id)) {
 		res.status(403).json({
 			errors: [{
 				'field': 'id',
-				'errorMessage': 'You are only allowed to upadte yourself.'
+				'errorMessage': 'You are only allowed to update yourself.'
 			}]
 		});
 		return;

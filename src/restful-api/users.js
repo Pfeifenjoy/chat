@@ -313,12 +313,17 @@ router.get("/search", (req, res) => {
 		})
 		.then(results => results.map(user => user.getUserRepresentation())) // Get user representations for all results
 		.then(results => {
-			// Search for index of the requesting user <=> myself
+			// Search for index of the requesting user
 			let mySelfIndex = results.findIndex(user => req.user.id === user.id);
 
 			if (mySelfIndex >= 0) {
 				// Remove my self
 				results.splice(mySelfIndex, 1);
+			}
+
+			// If there are much results, only return the first 100
+			if(results.length > 100){
+				results = results.slice(0, 99);
 			}
 
 			// Send results to client

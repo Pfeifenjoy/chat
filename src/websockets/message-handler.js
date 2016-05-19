@@ -1,9 +1,28 @@
 
 /**
- * handles the message X
+ * handles the message VideoMessageStop
  */
-function handleX(core, payload, user, connectionId, transactionId) {
+function handleVideoMessageStop(core, payload, user, connectionId, transactionId) {
+	let room = payload.roomId;
 
+	// validate: candidate, room exist
+	if (room === undefined) {
+		error('missing_room');
+	}
+
+	// check that the user is in the room
+	return user.hasRoom(room)
+		.then(inRoom => {
+			if (!inRoom) {
+				error('not_in_room');
+			}
+
+			// send response
+			core.router.sendMessageToRoom(room, 'VIDEO_MESSAGE_STOP', {
+				'sender': user.id,
+				'room': room
+			});
+		});
 }
 
 /**
@@ -11,7 +30,6 @@ function handleX(core, payload, user, connectionId, transactionId) {
  */
 function handleVideoMessageStart(core, payload, user, connectionId, transactionId) {
 	let candidate = payload.candidate;
-	let sender = user;
 	let room = payload.roomId;
 
 	// validate: candidate, room exist
@@ -79,7 +97,8 @@ function handleTextMessage(core, payload, user, contextConnectionId, contextTran
 function handleMessage(core, msgType, msgPayload, contextUser, contextConnectionId, contextTransactionId){
 	let handler = {
 		'TEXT_MESSAGE': handleTextMessage,
-		'VIDEO_MESSAGE_START': handleVideoMessageStart
+		'VIDEO_MESSAGE_START': handleVideoMessageStart,
+		'VIDEO_MESSAGE_STOP': handleVideoMessageStop
 	}[msgType];
 
 	if (handler === undefined) {

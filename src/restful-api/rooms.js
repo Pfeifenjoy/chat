@@ -213,23 +213,27 @@ router.get("/", (req, res) => {
     // Gets all rooms of the authenticated user
     req.user.getRooms().then(rooms => {
 
-        // sync promise to synchronise
-        let sync = Promise.resolve();
-
         // Object with all the room representations
         let room = [];
+        let userRooms = [];
 
         // For each room of the user get the user representation and add them to the object
-        rooms.forEach(item => {
-            sync = item.getUserRepresentation().then(represi => {
+        rooms.forEach((item, i) => {
+            userRooms.push(item.getUserRepresentation().then(represi => {
                 room.push(represi);
-            });
+            }));
         })
 
         // After all sent the object to the client
-        sync.then(() => {
+        Promise.all(userRooms).then(() => {
             res.json(room);
-        });
+        })
+        .catch(e => {
+            res.status(500).json({
+                field: "Unknown error",
+                errorMessage: "Unknown error"
+            });
+        })
     });
 });
 

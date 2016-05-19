@@ -4,6 +4,7 @@ const express       = require('express');
 const bodyParser    = require('body-parser');
 const routes        = require('./restful-api/routes');
 const websockets    = require('./websockets/server.js');
+const path          = require("path");
 
 // read the configuration
 const configFile = './files/config/chat-config.json';
@@ -36,6 +37,13 @@ core.init()
             // add all routes
             app.use(apiBaseUrl, routes.initialRoutes(core));
         }
+
+        // static files delivery
+        app.use("/build", express.static(path.resolve(__dirname + "/../files/chat-frontend/build/")));
+
+        app.get("*", (req, res) => {
+            res.sendFile(path.resolve(__dirname + "/../files/chat-frontend/index.html"));
+        })
 
         // Handle routes which don't exist
         app.use((req, res, next) => {

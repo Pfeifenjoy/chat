@@ -154,17 +154,27 @@ router.put("/exit", (req, res) => {
             }
         });
 
-    // Refresh the Websocket-Subscription lists
-    let refreshed = removeUserFromRoom
-        .then(() => {
-            return req.app.core.router.refreshUser(req.user);
+    // Get the remaining members in the room.
+    let getRemainingUsersInRoom = Promise.all([room, removeUserFromRoom])
+        .then(arg => {
+            let [room, _] = arg;
+            return room.getUsers();
         });
 
     // Get the number of remaining members in the room
-    let getNumberOfUsers = Promise.all([room, removeUserFromRoom])
-        .then(arg => {
-            let [room, _] = arg;
-            return room.countUsers();
+    let getNumberOfUsers = getRemainingUsersInRoom
+        .then(users => {
+            return users.length;
+        });
+
+    // Refresh the Websocket-Subscription lists
+    let refreshed = getRemainingUsersInRoom
+        .then(leftoverUsers => {
+            let promises = leftoverUsers.map(
+                u => req.app.core.router.refreshUser(u)
+            );
+            promises.push(req.app.core.router.refreshUser(req.user));
+            return Promise.all(promises);
         });
 
     // Delete room if there are less then two members

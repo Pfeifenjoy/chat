@@ -66,8 +66,24 @@ router.post("/", (req, res) => {
         return room.getUserRepresentation();
     });
 
-    // Send the user representation to the client
-    userRepresentation.then(representation => {
+    // Get the actual members
+    let memberIds = members.map(m => parseInt(m.id));
+    let memberObjs = req.app.core.db.User
+        .findAll({'where': {'id': memberIds}});
+
+    // Refresh the Websocket-Subscription lists
+    let refreshed = Promise.all([memberObjs, userAdded])
+        .then(arg => {
+            let [memberObjects, _] = arg;
+            return Promise.all(memberObjects.map(
+                member => req.app.core.router.refreshUser(member)
+            ));
+        });
+    
+    // send the user representation to the client
+    Promise.all([userRepresentation, refreshed])
+        .then(arg => {
+            let [representation, _] = arg;
             res.json(representation);
         })
         .catch(e => {
@@ -115,53 +131,64 @@ router.put("/exit", (req, res) => {
     let room = req.app.core.db.Room.findById(roomId);
 
     // Check if authenticated user is in the provided room
-    let userIsInRoom = room.then(room => {
-        return req.user.hasRoom(room);
-    });
+    let userIsInRoom = room
+        .then(room => {
+            return req.user.hasRoom(room);
+        });
 
     // Remove member from room if he is there
-    let removeUserFromRoom = Promise.all([room, userIsInRoom]).then(arg => {
-        let [room, userIsInRoom] = arg;
-        if (userIsInRoom) {
-            return room.removeUser(req.user).then(() => {
+    let removeUserFromRoom = Promise.all([room, userIsInRoom])
+        .then(arg => {
+            let [room, userIsInRoom] = arg;
+            if (userIsInRoom) {
+                return room.removeUser(req.user).then(() => {
 
-            }).catch(error => {
-                res.status(500).json({
-                    "errors": [{
-                        'field': 'unexpected',
-                        'errorMessage': 'Unexpected error.'
-                    }]
+                }).catch(error => {
+                    res.status(500).json({
+                        "errors": [{
+                            'field': 'unexpected',
+                            'errorMessage': 'Unexpected error.'
+                        }]
+                    });
                 });
-            });
-        }
-    });
+            }
+        });
+
+    // Refresh the Websocket-Subscription lists
+    let refreshed = removeUserFromRoom
+        .then(() => {
+            return req.app.core.router.refreshUser(req.user);
+        });
 
     // Get the number of remaining members in the room
-    let getNumberOfUsers = Promise.all([room, removeUserFromRoom]).then(arg => {
-        let [room, _] = arg;
-        return room.countUsers();
-    });
+    let getNumberOfUsers = Promise.all([room, removeUserFromRoom])
+        .then(arg => {
+            let [room, _] = arg;
+            return room.countUsers();
+        });
 
     // Delete room if there are less then two members
-    let deleteRoom = Promise.all([room, getNumberOfUsers]).then(arg => {
-        let [room, count] = arg;
-        if (count <= 1) {
-            return room.destroy();
-        }
-    });
+    let deleteRoom = Promise.all([room, getNumberOfUsers])
+        .then(arg => {
+            let [room, count, _] = arg;
+            if (count <= 1) {
+                return room.destroy();
+            }
+        });
 
     // Send response or if there are errors send a error message
-    deleteRoom.then(() => {
-        res.send("Left room.");
-    }).catch(error => {
-        console.log(error);
-        res.status(400).json({
-            "errors": [{
-                'field': 'roomId',
-                'errorMessage': 'User does not exist in this room.'
-            }]
+    Promise.all([deleteRoom, refreshed])
+        .then(() => {
+            res.send("Left room.");
+        }).catch(error => {
+            console.log(error);
+            res.status(400).json({
+                "errors": [{
+                    'field': 'roomId',
+                    'errorMessage': 'User does not exist in this room.'
+                }]
+            });
         });
-    });
 });
 
 /**

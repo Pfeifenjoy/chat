@@ -120,6 +120,7 @@ class MessageRouter {
 	 */
 	refreshUser(user){
 		let userId = String(user.id);
+		console.log('ws: Refreshing subscribed rooms of user: ', user.id);
 
 		// if the user was never added to the message router,
 		// then there is nothing to do.
@@ -141,6 +142,8 @@ class MessageRouter {
 				for (let room of rooms) {
 					this._addUserToRoom(userId, room);
 				}
+
+				console.log('ws: Refresh done');
 
 			});
 

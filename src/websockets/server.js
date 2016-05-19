@@ -241,6 +241,17 @@ function startServer(core) {
 	}
 	wss.on('connection', onConnection);
 
+	// notify clients, when their room subscriptions are changed.
+	core.router.userRefreshCallback = function(user, rooms){
+		Promise.all(rooms.map(r => r.getUserRepresentation()))
+			.then(userRepresentation => {
+				core.router.sendMessageToUser(user, 'REFRESH_ROOMS', {
+					rooms: userRepresentation
+				});
+			});
+
+	};
+
 	return wss;
 }
 

@@ -7,6 +7,7 @@ class MessageRouter {
 		this._users = {};
 		this._rooms = {};
 		this._uniqueNumber = 0;
+		this.userRefreshCallback = function(user, rooms){};
 	}
 
 	/**
@@ -142,6 +143,9 @@ class MessageRouter {
 				for (let room of rooms) {
 					this._addUserToRoom(userId, room);
 				}
+
+				// call the callback
+				this.userRefreshCallback(user, rooms);
 
 				console.log('ws: Refresh done');
 

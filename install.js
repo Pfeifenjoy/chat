@@ -35,7 +35,7 @@ function installFrontend(callback) {
 
 
 var lastPath = process.cwd();
-process.chdir(__dirname + "/files/chat-frontend");
+process.chdir(__dirname + "/files/frontend");
 installFrontend(function() {
     process.chdir(lastPath);
     console.log("Everything done.");

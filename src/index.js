@@ -39,10 +39,10 @@ core.init()
         }
 
         // static files delivery
-        app.use("/build", express.static(path.resolve(__dirname + "/../files/chat-frontend/build/")));
+        app.use("/build", express.static(path.resolve(__dirname + "/../files/frontend/build/")));
 
         app.get("*", (req, res) => {
-            res.sendFile(path.resolve(__dirname + "/../files/chat-frontend/index.html"));
+            res.sendFile(path.resolve(__dirname + "/../files/frontend/index.html"));
         })
 
         // Handle routes which don't exist

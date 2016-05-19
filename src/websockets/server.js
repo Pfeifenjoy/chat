@@ -1,7 +1,8 @@
 const WebSocketServer = require('ws').Server
+const handleMessage = require('./message-handler.js').handleMessage;
 
 class Connection{
-	
+
 	constructor(core, client) {
 
 		// init
@@ -10,7 +11,7 @@ class Connection{
 		this.authenticated = false;
 		this.expires = 0;
 		this.user = null;
-		this.subscriptionid = 0;
+		this.connectionId = 0;
 		this.authenticating = false;
 
 		// register events
@@ -28,7 +29,7 @@ class Connection{
 	 * the given message type may be handeled.
 	 */
 	isAuthenticated(){
-		return authenticated && expires > Date.now();
+		return this.authenticated && this.expires > Date.now();
 	}
 
 	/**
@@ -51,8 +52,8 @@ class Connection{
 
 		// finalize
 		return registered
-			.then(subscriptionid => {
-				this.subscriptionid = subscriptionid;
+			.then(connectionId => {
+				this.connectionId = connectionId;
 				this.user = user;
 				this.expires = expires;
 				this.authenticated = true;
@@ -70,7 +71,7 @@ class Connection{
 	unAuthenticate() {
 		if (this.authenticated) {
 			this.authenticated = false;
-			this.core.router.unregisterUser(this.user, this.subscriptionid);
+			this.core.router.unregisterUser(this.user, this.connectionId);
 		}
 	}
 
@@ -106,8 +107,15 @@ class Connection{
 	/**
 	 * Processes a message
 	 */
-	processMessage(type, payload, transactionid){
-		this.sendError(transactionid, 'unsupported_message_type');
+	processMessage(msgType, msgPayload, transactionid){
+		handleMessage(
+			this.core, 
+			msgType, 
+			msgPayload, 
+			this.user,
+			this.connectionId,
+			transactionid
+		);
 	}
 
 	//---- Events --------------------------------------------------------------------------------
@@ -116,8 +124,8 @@ class Connection{
 	 * Gets called when the router wants to
 	 * send a message over this connection.
 	 */
-	onMessageFromRouter() {
-
+	onMessageFromRouter(type, payload) {
+		this.sendMessage(type, payload);
 	}
 
 	/**
@@ -151,6 +159,7 @@ class Connection{
 			}
 
 			// handle the message
+			console.log('ws: ← from connection', this.connectionId, type)
 			this.processMessage(type, payload, transactionid);
 
 		} catch (e) {

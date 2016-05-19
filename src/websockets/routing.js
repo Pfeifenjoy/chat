@@ -152,6 +152,7 @@ class MessageRouter {
 	 */
 	sendMessageToConnection(user, connectionId, msgType, msgPayload) {
 		let userId = String(user.id || user);
+		console.log('ws: → to connection', connectionId, msgType)
 
 		if (this._users[userId] !== undefined){
 			let connections = this._users[userId].connections;
@@ -167,6 +168,7 @@ class MessageRouter {
 	 */
 	sendMessageToUser(user, msgType, msgPayload) {
 		let userId = String(user.id || user);
+		console.log('ws: → to user', userId, msgType);
 
 		if (this._users[userId] !== undefined) {
 			let connections = this._users[userId].connections;
@@ -181,12 +183,13 @@ class MessageRouter {
 	 * Sends a message to all connections of users in a room.
 	 */
 	sendMessageToRoom(room, msgType, msgPayload) {
-		let roomId = String(room.id);
+		let roomId = String(room.id || room);
+		console.log('ws: → to room', roomId, msgType);
 
 		if (this._rooms[roomId] !== undefined) {
 			let userIds = this._rooms[roomId].users;
 			for (let userId of userIds) {
-				this.sendMessageToRoom(userId, msgType, msgPayload);
+				this.sendMessageToUser(userId, msgType, msgPayload);
 			}
 		}
 	}

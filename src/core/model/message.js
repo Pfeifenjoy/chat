@@ -15,7 +15,7 @@ function defineMessage(core, sequelize, User, Room) {
                     'id': this.id,
                     'content': this.content,
                     'author': this.user,
-                    'timestamp': this.createdAt
+                    'timestamp': this.createdAt.getTime()
                 };
             }
         }

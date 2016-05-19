@@ -35,7 +35,8 @@ function connect(core) {
 	return {
 		'sequelize': sequelize,
 		'User': User,
-		'Room': Room
+		'Room': Room,
+		'Message': Message
 	};
 }
 

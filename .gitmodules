@@ -1,3 +1,0 @@
-[submodule "files/chat-frontend"]
-	path = files/chat-frontend
-	url = git@github.com:Pfeifenjoy/chat-frontend.git

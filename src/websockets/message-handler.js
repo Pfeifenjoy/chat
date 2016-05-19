@@ -7,14 +7,44 @@ function handleX(core, payload, user, connectionId, transactionId) {
 }
 
 /**
+ * handles the message VideoMessageStart
+ */
+function handleVideoMessageStart(core, payload, user, connectionId, transactionId) {
+	let candidate = payload.candidate;
+	let sender = user;
+	let room = payload.roomId;
+
+	// validate: candidate, room exist
+	if (room === undefined) {
+		error('missing_room');
+	}
+	if (candidate === undefined) {
+		error('missing_candidate');
+	}
+
+	// check that the user is in the room
+	return user.hasRoom(room)
+		.then(inRoom => {
+			if (!inRoom) {
+				error('not_in_room');
+			}
+
+			// send response
+			core.router.sendMessageToRoom(room, 'VIDEO_MESSAGE_START', {
+				'candidate': candidate,
+				'sender': user.id,
+				'room': room
+			});
+		});
+}
+
+/**
  * handles the message TextMessage
  */
 function handleTextMessage(core, payload, user, contextConnectionId, contextTransactionId) {
 	let room = payload.roomId;
 	let content = payload.text;
 	let author = user.id;
-
-	console.log('room:', room);
 
 	// validate: room, content exist
 	if (room === undefined) {
@@ -39,10 +69,7 @@ function handleTextMessage(core, payload, user, contextConnectionId, contextTran
 		})
 		.then(message => {
 			// send broadcast
-			let res = message.getUserRepresentation();
-			res.room = room;
-			console.log('room:', room);
-			core.router.sendMessageToRoom(room, 'TEXT_MESSAGE', res);
+			core.router.sendMessageToRoom(room, 'TEXT_MESSAGE', message.getUserRepresentation());
 		});
 }
 
@@ -51,7 +78,8 @@ function handleTextMessage(core, payload, user, contextConnectionId, contextTran
  */
 function handleMessage(core, msgType, msgPayload, contextUser, contextConnectionId, contextTransactionId){
 	let handler = {
-		'TEXT_MESSAGE': handleTextMessage
+		'TEXT_MESSAGE': handleTextMessage,
+		'VIDEO_MESSAGE_START': handleVideoMessageStart
 	}[msgType];
 
 	if (handler === undefined) {

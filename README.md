@@ -1,10 +1,10 @@
 
-#Prerequisites
+# Prerequisites
 
 - nodejs >= v6.1
 
 
-#Start the chat application
+# Start the chat application
 Run:
 
 ```
